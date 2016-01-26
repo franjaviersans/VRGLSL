@@ -39,7 +39,7 @@ class CCubeIntersection
 	//Variables
 	private:
 		GLuint m_iFrameBuffer, depthrenderbuffer, m_uiWidth, m_uiHeight, txtHit;
-		CGLSLProgram m_program;
+		GLSLProgram m_program;
 };
 
 

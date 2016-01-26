@@ -1,3 +1,3 @@
 # README #
 
-Volume Rendering application using Raytracing the fragment shader with OpenGL
+Volume Rendering application using Ray Casting the fragment shader with OpenGL

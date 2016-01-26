@@ -104,22 +104,14 @@ void TransferFunction::InitContext( GLFWwindow *window, int *windowsW, int *wind
 	isVisible = false;
 
 	//Load the shaders
-	m_program.loadShader(std::string("shaders/TransferFunction.vert"), CGLSLProgram::VERTEX);
-	m_program.loadShader(std::string("shaders/TransferFunction.frag"), CGLSLProgram::FRAGMENT);
-	m_program.create_link();
-	m_program.enable();
-		m_program.addAttribute("vVertexCoord");
-		m_program.addAttribute("vTextureCoord");
-		m_program.addUniform("vColor1");
-		m_program.addUniform("vColor2");
-		m_program.addUniform("vColor3");
-		m_program.addUniform("vColor4");
-		m_program.addUniform("tex");
-		m_program.addUniform("Usetexture");
-		m_program.addUniform("Mode");
-		m_program.addUniform("mProjection");
-		m_program.addUniform("mModelView");
-	m_program.disable();
+	try{
+		m_program.compileShader("./shaders/TransferFunction.vert", GLSLShader::VERTEX);
+		m_program.compileShader("./shaders/TransferFunction.frag", GLSLShader::FRAGMENT);
+		m_program.link();
+	}catch (GLSLProgramException & e) {
+		std::cerr << e.what() << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 //Function to rezise the windows
@@ -181,16 +173,16 @@ void TransferFunction::Display()
 				glm::vec3(ww, hh,1.0f));							//Scale
 
 	//Enable the shader
-	m_program.enable();
+	m_program.use();
 	
-	glUniformMatrix4fv(m_program.getLocation("mProjection"), 1, GL_FALSE, glm::value_ptr(mProjMatrix));
-	glUniform1i(m_program.getLocation("tex"), 0);
+	m_program.setUniform("mProjection", mProjMatrix);
+	m_program.setUniform("tex", 0);
 
 	//Draw a Cube
-	glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(color));
-	glUniform1i(m_program.getLocation("Usetexture"), 1);
-	glUniform1i(m_program.getLocation("Mode"), 0);
-	glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+	m_program.setUniform("vColor1", color);
+	m_program.setUniform("Usetexture", 1);
+	m_program.setUniform("Mode", 0);
+	m_program.setUniform("mModelView", mModelViewMatrix);
 	FBOQuad::Instance()->Draw();
 	//>>>>>>>>>>>>>>>END Drawing the image with the control points
 	
@@ -206,14 +198,14 @@ void TransferFunction::Display()
 				glm::vec3(sizeW, sizeH,1.0f));									//Scale
 
 		//Draw a Cube
-			glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(baseColors[i]));
-			glUniform4fv(m_program.getLocation("vColor2"), 1, glm::value_ptr(baseColors[(i+1) % 6]));
-			glUniform4fv(m_program.getLocation("vColor3"), 1, glm::value_ptr(baseColors[(i+1) % 6]));
-			glUniform4fv(m_program.getLocation("vColor4"), 1, glm::value_ptr(baseColors[i]));
-			glUniform1i(m_program.getLocation("Usetexture"), 0);
-			glUniform1i(m_program.getLocation("Mode"), 1);
-			glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
-			FBOQuad::Instance()->Draw();
+		m_program.setUniform("vColor1", baseColors[i]);
+		m_program.setUniform("vColor2", baseColors[(i + 1) % 6]);
+		m_program.setUniform("vColor3", baseColors[(i + 1) % 6]);
+		m_program.setUniform("vColor4", baseColors[i]);
+		m_program.setUniform("Usetexture", 0);
+		m_program.setUniform("Mode", 1);
+		m_program.setUniform("mModelView", mModelViewMatrix);
+		FBOQuad::Instance()->Draw();
 	}
 	//>>>>>>>>>>>>>>>END Draw the color chooser
 
@@ -231,11 +223,11 @@ void TransferFunction::Display()
 				glm::vec3(sizeW, sizeH,1.0f));											//Scale
 
 	//Draw a Quad
-	glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(color));
-	glUniform1i(m_program.getLocation("text"), 0);
-	glUniform1i(m_program.getLocation("Usetexture"), 1);
-	glUniform1i(m_program.getLocation("Mode"), 0);
-	glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+	m_program.setUniform("vColor1", color);
+	m_program.setUniform("text", 0);
+	m_program.setUniform("Usetexture", 1);
+	m_program.setUniform("Mode", 0);
+	m_program.setUniform("mModelView", mModelViewMatrix);
 	FBOQuad::Instance()->Draw();
 	//>>>>>>>>>>>>>>>END Draw the selector
 	
@@ -252,13 +244,13 @@ void TransferFunction::Display()
 				glm::vec3(sizeW, sizeH,1.0f));											//Scale
 
 	//Draw a Quad
-	glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(glm::vec4(0.0f, 0.0f, 0.0f, alpha)));
-	glUniform4fv(m_program.getLocation("vColor2"), 1, glm::value_ptr(glm::vec4(0.0f, 0.0f, 0.0f, alpha)));
-	glUniform4fv(m_program.getLocation("vColor3"), 1, glm::value_ptr(this->currentColor));
-	glUniform4fv(m_program.getLocation("vColor4"), 1, glm::value_ptr(glm::vec4(1.0f, 1.0f, 1.0f, alpha)));
-	glUniform1i(m_program.getLocation("Usetexture"), 0);
-	glUniform1i(m_program.getLocation("Mode"), 1);
-	glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+	m_program.setUniform("vColor1", glm::vec4(0.0f, 0.0f, 0.0f, alpha));
+	m_program.setUniform("vColor2", glm::vec4(0.0f, 0.0f, 0.0f, alpha));
+	m_program.setUniform("vColor3", this->currentColor);
+	m_program.setUniform("vColor4", glm::vec4(1.0f, 1.0f, 1.0f, alpha));
+	m_program.setUniform("Usetexture", 0);
+	m_program.setUniform("Mode", 1);
+	m_program.setUniform("mModelView", mModelViewMatrix);
 	FBOQuad::Instance()->Draw();
 	//>>>>>>>>>>>>>>>END Draw the other image
 
@@ -280,14 +272,15 @@ void TransferFunction::Display()
 				glm::vec3(sizeW*0.5f + iniW, -sizeH*0.5f + SIZEH - iniH,0.0f)),	//Translate by half + to its position
 				glm::vec3(sizeW, sizeH,1.0f));											//Scale
 
-		glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha)));
-		glUniform4fv(m_program.getLocation("vColor2"), 1, glm::value_ptr(glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha)));
-		glUniform4fv(m_program.getLocation("vColor3"), 1, glm::value_ptr(glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha)));
-		glUniform4fv(m_program.getLocation("vColor4"), 1, glm::value_ptr(glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha)));
-		glUniform1i(m_program.getLocation("Usetexture"), 0);
-		if(this->pointList[ point - 1 ].y > this->pointList[ point ].y) glUniform1i(m_program.getLocation("Mode"), 2);
-		else glUniform1i(m_program.getLocation("Mode"), 3);
-		glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+
+		m_program.setUniform("vColor1", glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha));
+		m_program.setUniform("vColor2", glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha));
+		m_program.setUniform("vColor3", glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha));
+		m_program.setUniform("vColor4", glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha));
+		m_program.setUniform("Usetexture", 0);
+		if (this->pointList[point - 1].y > this->pointList[point].y) m_program.setUniform("Mode", 2);
+		else m_program.setUniform("Mode", 3);
+		m_program.setUniform("mModelView", mModelViewMatrix);
 		FBOQuad::Instance()->Draw();
 
 
@@ -301,12 +294,12 @@ void TransferFunction::Display()
 					glm::vec3(sizeW*0.5f + iniW, sizeH*0.5f + SIZEH - MAXH,0.0f)),	//Translate by half + to its position
 					glm::vec3(sizeW, sizeH,1.0f));											//Scale
 		
-			glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha)));
-			glUniform4fv(m_program.getLocation("vColor2"), 1, glm::value_ptr(glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha)));
-			glUniform4fv(m_program.getLocation("vColor3"), 1, glm::value_ptr(glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha)));
-			glUniform4fv(m_program.getLocation("vColor4"), 1, glm::value_ptr(glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha)));
-			glUniform1i(m_program.getLocation("Mode"), 1);
-			glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+			m_program.setUniform("vColor1", glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha));
+			m_program.setUniform("vColor2", glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha));
+			m_program.setUniform("vColor3", glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha));
+			m_program.setUniform("vColor4", glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha));
+			m_program.setUniform("Mode", 1);
+			m_program.setUniform("mModelView", mModelViewMatrix);
 			FBOQuad::Instance()->Draw();
 		}
 
@@ -329,10 +322,10 @@ void TransferFunction::Display()
 					glm::vec3(10.0f, 10.0f,1.0f));											//Scale
 
 		//Draw a Quad
-		glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(color));
-		glUniform1i(m_program.getLocation("Usetexture"), 1);
-		glUniform1i(m_program.getLocation("Mode"), 0);
-		glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+		m_program.setUniform("vColor1", color);
+		m_program.setUniform("Usetexture", 1);
+		m_program.setUniform("Mode", 0);
+		m_program.setUniform("mModelView", mModelViewMatrix);
 		FBOQuad::Instance()->Draw();
 	}
 	//>>>>>>>>>>>>>>>END Draw each point
@@ -347,17 +340,15 @@ void TransferFunction::Display()
 				glm::vec3(10, 10,1.0f));											//Scale
 
 	//Draw a Quad
-	glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(color));
-	glUniform1i(m_program.getLocation("Usetexture"), 1);
-	glUniform1i(m_program.getLocation("Mode"), 0);
-	glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+	m_program.setUniform("vColor1", color);
+	m_program.setUniform("Usetexture", 1);
+	m_program.setUniform("Mode", 0);
+	m_program.setUniform("mModelView", mModelViewMatrix);
 	FBOQuad::Instance()->Draw();
 	//>>>>>>>>>>>>>>>END Draw circle selector
 
 	glDisable(GL_BLEND);
 	glEnable( GL_DEPTH_TEST );
-
-	m_program.disable();
 	
 	glViewport(0, 0,  *windowsW, *windowsH);
 }

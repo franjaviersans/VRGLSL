@@ -30,7 +30,7 @@ namespace glfwFunc
 	float color[]={1,1,1};
 	bool pintar = false;
 
-	CGLSLProgram * m_program;
+	GLSLProgram m_program;
 	glm::mat4x4 mProjMatrix, mModelViewMatrix, mMVP;
 
 	//Variables to do rotation
@@ -167,6 +167,10 @@ namespace glfwFunc
 		mProjMatrix = glm::perspective(float(fAngle), ratio, 1.0f, 10.0f);
 	//	mProjMatrix = glm::ortho(-1.0f,1.0f,-1.0f,1.0f,-1.0f,5.0f);
 
+		m_program.use();
+		{
+			m_program.setUniform("mProjection", mProjMatrix);
+		}
 
 		TwWindowSizeGLFW3(window, iWidth, iHeight);
 		
@@ -198,14 +202,10 @@ namespace glfwFunc
 		//Obtain Back hits
 		m_BackInter->Draw(mMVP);
 
-		while((err = glGetError()) != GL_NO_ERROR)
-		{
-		  std::cout<<"Dibujo 2 "<< err<<std::endl;
-		}
-
 
 		//Draw a Cube
-		m_program->enable();
+		m_program.use();
+		{
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -214,16 +214,15 @@ namespace glfwFunc
 			g_pTransferFunc->Use(GL_TEXTURE2);
 			volume->Use(GL_TEXTURE3);
 
-			glUniformMatrix4fv(m_program->getLocation("mProjection"), 1, GL_FALSE, glm::value_ptr(mProjMatrix));
-			glUniformMatrix4fv(m_program->getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
-			
+			m_program.setUniform("mModelView", mModelViewMatrix);
+
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 			//glPointSize(10);
 			FBOCube::Instance()->Draw();
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 			glDisable(GL_BLEND);
-		m_program->disable();	
+		}
 
 
 
@@ -234,13 +233,6 @@ namespace glfwFunc
 		g_pTransferFunc->Display();
 
 		glfwSwapBuffers(glfwWindow);
-
-		while((err = glGetError()) != GL_NO_ERROR)
-		{
-		  std::cout<<"Swap "<< err<<std::endl;
-		}
-
-		
 	}
 	
 
@@ -312,18 +304,16 @@ namespace glfwFunc
 		TwAddVarRW(myBar, "ObjRotation", TW_TYPE_QUAT4F, &quater, " label='Object rotation' open help='Change the object orientation.' ");
 
 		//load the shaders
-		m_program = new CGLSLProgram();
-		m_program->loadShader(std::string("shaders/basic.vert"), CGLSLProgram::VERTEX);
-		m_program->loadShader(std::string("shaders/basic.frag"), CGLSLProgram::FRAGMENT);
-		m_program->create_link();
-		m_program->enable();
-			m_program->addAttribute("vVertex");
-			m_program->addAttribute("vTexture");
-			m_program->addUniform("mProjection");
-			m_program->addUniform("mModelView");
-			m_program->addUniform("h");
-		m_program->disable();
-
+		try{
+			m_program.compileShader("shaders/basic.vert", GLSLShader::VERTEX);
+			m_program.compileShader("shaders/basic.frag", GLSLShader::FRAGMENT);
+			m_program.link();
+		}
+		catch (GLSLProgramException & e) {
+			std::cerr << e.what() << std::endl;
+			exit(EXIT_FAILURE);
+		}
+			
 		m_BackInter = new CCubeIntersection(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
@@ -332,9 +322,10 @@ namespace glfwFunc
 		volume->Load("Raw/head256.raw", 256,256,256);
 
 		//Set the value of h
-		m_program->enable();
-			glUniform1f(m_program->getLocation("h"), 1.0f/volume->diagonal);
-		m_program->disable();
+		m_program.use();
+		{
+			m_program.setUniform("h", 1.0f / volume->diagonal);
+		}
 
 
 
@@ -348,7 +339,6 @@ namespace glfwFunc
 	{
 		delete m_BackInter;
 		delete g_pTransferFunc;
-		delete m_program;
 		TextureManager::Inst()->UnloadAllTextures();
 		glfwTerminate();
 		glfwDestroyWindow(glfwWindow);

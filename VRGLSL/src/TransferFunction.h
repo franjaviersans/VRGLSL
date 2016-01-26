@@ -73,7 +73,7 @@ private:
 	glm::mat4x4 mProjMatrix, mModelViewMatrix;
 
 	//Shaders programs
-	CGLSLProgram m_program;
+	GLSLProgram m_program;
 				
 	bool Picking( int x, int y);
 	void SortPoints( int jumpPoint = -1 );
