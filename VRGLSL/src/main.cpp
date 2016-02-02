@@ -227,7 +227,7 @@ namespace glfwFunc
 
 
 		//Draw the AntTweakBar
-		TwDraw();
+		//TwDraw();
 
 		//Draw the transfer function
 		g_pTransferFunc->Display();
