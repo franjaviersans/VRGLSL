@@ -319,7 +319,7 @@ namespace glfwFunc
 
 		//Create volume
 		volume = new Volume();
-		volume->Load("Raw/head256.raw", 256,256,256);
+		volume->Load("Raw/foot_8_256_256_256.raw", 256,256,256);
 
 		//Set the value of h
 		m_program.use();
