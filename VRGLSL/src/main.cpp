@@ -20,9 +20,9 @@ namespace glfwFunc
 	int WINDOW_HEIGHT = 768;
 	std::string strNameWindow = "Hello GLFW";
 
-	const float NCP = 0.01f;
-	const float FCP = 45.0f;
-	const float fAngle = 45.f;
+	const float NCP = 1.0f;
+	const float FCP = 10.0f;
+	const float fAngle = 45.f * (3.14f / 180.0f); //In radians
 
 	//Declare the transfer function
 	TransferFunction *g_pTransferFunc;
@@ -164,7 +164,13 @@ namespace glfwFunc
 		float ratio = iWidth / float(iHeight);
 		glViewport(0, 0, iWidth, iHeight);
 
-		mProjMatrix = glm::perspective(float(fAngle), ratio, 1.0f, 10.0f);
+		std::cout << WINDOW_WIDTH << "  " << WINDOW_HEIGHT << std::endl;
+
+#ifdef GLM_FORCE_RADIANS 
+		std::cout << "MALDITA SEA" std::endl;
+#endif
+
+		mProjMatrix = glm::perspective(float(fAngle), ratio, NCP, FCP);
 	//	mProjMatrix = glm::ortho(-1.0f,1.0f,-1.0f,1.0f,-1.0f,5.0f);
 
 		m_program.use();
