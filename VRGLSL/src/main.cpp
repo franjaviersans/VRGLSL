@@ -164,12 +164,6 @@ namespace glfwFunc
 		float ratio = iWidth / float(iHeight);
 		glViewport(0, 0, iWidth, iHeight);
 
-		std::cout << WINDOW_WIDTH << "  " << WINDOW_HEIGHT << std::endl;
-
-#ifdef GLM_FORCE_RADIANS 
-		std::cout << "MALDITA SEA" std::endl;
-#endif
-
 		mProjMatrix = glm::perspective(float(fAngle), ratio, NCP, FCP);
 	//	mProjMatrix = glm::ortho(-1.0f,1.0f,-1.0f,1.0f,-1.0f,5.0f);
 
@@ -377,7 +371,6 @@ int main(int argc, char** argv)
 		{
 			glfwFunc::g_pTransferFunc->UpdatePallete();
 			glfwFunc::g_pTransferFunc->updateTexture = false;
-			cout<<"Actualizando textura  "<<endl;
 
 		}
 		glfwFunc::draw();
