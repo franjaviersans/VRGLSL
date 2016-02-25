@@ -48,6 +48,12 @@ void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth)
 	int length = -1;
 	textureFile.seekg (0, textureFile.end);
 	length = int(textureFile.tellg());
+
+	if (length != width * height * depth){
+		cout << "Bad volume size or wrong file!" << endl;
+		exit(0);
+	}
+
     textureFile.seekg (0, textureFile.beg);
 
 	char * memtexture = new char[length];
