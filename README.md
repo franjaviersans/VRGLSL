@@ -2,8 +2,31 @@
 
 Volume Rendering application using Ray Casting the fragment shader with OpenGL.
 
+## Project Configuration ##
+- Need GLFW, FreeImage, GLM, and GLEW. 
+- Add include folder with all .h files, lib folder with al .lib files and the .dll files in the root folder.
+- Only volume raw file format supported by now.
 
-# Set up #
-Need GLFW, FreeImage, AntTweakBar, GLM, and GLEW.
-Add include folder with all .h files, lib folder with al .lib files and the .dll files in the root folder.
-The volumes are read from a folder name RAW. Only raw file format supported by now.
+
+## Executable Parameters #
+The program can run without any parameters and will load a volume of size 256x256x256 localted in "./RAW/volume.raw". Some parameters can be passed to the program in the following way: 
+
+```sh
+$ program <volume_path> <width> <height> <depth> [<transfer_func_path>]
+```
+
+where **<volume_path>** is the path of the file containing the volume; **<width>, <height>,** and **<depth>** the dimensions of the volume, and **<transfer_function_path>** is the path of the file containing the initial set up of the transfer function. The last parameter is optional, in which case, the identity function is loaded.
+
+## Set up of the Transfer Function File#
+
+The file has the following configuration:
+
+```sh
+<num_points>
+<scalar_value0> <r> <g> <b> <a>
+<scalar_value1> <r> <g> <b> <a>
+...
+<scalar_valueN> <r> <g> <b> <a>
+```
+
+where  **<num_points>** is the number of points indicated. Then, for each point there are four float values, indicating the scalar value ([0, 255]) and the corresponding RGBA normalized color ([0.0f,1.0f] ) for that scalar value in ascending order. Color for scalar values no indicated in the file are interpolated. At least the first (scalar = 0) and the last (scalar = 255) values must be indicated.
