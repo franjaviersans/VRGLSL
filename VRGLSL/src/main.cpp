@@ -18,7 +18,7 @@ namespace glfwFunc
 	GLFWwindow* glfwWindow;
 	int WINDOW_WIDTH = 1024;
 	int WINDOW_HEIGHT = 768;
-	std::string strNameWindow = "Hello GLFW";
+	std::string strNameWindow = "Fragment Shader Volume Ray Casting";
 
 	const float NCP = 1.0f;
 	const float FCP = 10.0f;
@@ -47,11 +47,6 @@ namespace glfwFunc
 	Volume *volume = NULL;
 
 
-	void TW_CALL pressExit(void *clientData)
-	{ 
-		TwTerminate();
-		exit(0);
-	}
 
 	
 	///< Callback function used by GLFW to capture some possible error.
@@ -59,14 +54,6 @@ namespace glfwFunc
 	{
 		printf("%s\n",description );
 	}
-
-
-	inline int TwEventMouseWheelGLFW3(GLFWwindow* window, double xoffset, double yoffset)
-	{return TwEventMouseWheelGLFW((int)yoffset);}
-	inline int TwEventCharGLFW3(GLFWwindow* window, int codepoint)
-	{return TwEventCharGLFW(codepoint, GLFW_PRESS);}
-	inline int TwWindowSizeGLFW3(GLFWwindow* window, int width, int height)
-	{return TwWindowSize(width, height);}
 
 
 	///
@@ -79,47 +66,42 @@ namespace glfwFunc
 	///
 	void keyboardCB(GLFWwindow* window, int iKey, int iScancode, int iAction, int iMods)
 	{
-		if(!TwEventKeyGLFW(iKey, iAction)){
-			if (iAction == GLFW_PRESS)
+		if (iAction == GLFW_PRESS)
+		{
+			switch (iKey)
 			{
-				switch (iKey)
-				{
-					case GLFW_KEY_ESCAPE:
-					case GLFW_KEY_Q:
-						glfwSetWindowShouldClose(window, GL_TRUE);
-						break;
-					case GLFW_KEY_SPACE:
-						g_pTransferFunc->isVisible = !g_pTransferFunc->isVisible;
-						break;
-				}
+				case GLFW_KEY_ESCAPE:
+				case GLFW_KEY_Q:
+					glfwSetWindowShouldClose(window, GL_TRUE);
+					break;
+				case GLFW_KEY_SPACE:
+					g_pTransferFunc->isVisible = !g_pTransferFunc->isVisible;
+					break;
 			}
 		}
 	}
 
 	inline int TwEventMousePosGLFW3(GLFWwindow* window, double xpos, double ypos)
 	{ 
-	
-		TwMouseMotion(int(xpos), int(ypos));
 		g_pTransferFunc->CursorPos(int(xpos), int(ypos));
-		if(pres){
+		if (pres){
 			//Rotation
 			float dx = float(xpos - lastx);
 			float dy = float(ypos - lasty);
 
-			if(!(dx == 0 && dy == 0)){
+			if (!(dx == 0 && dy == 0)){
 				//Calculate angle and rotation axis
-				float angle = sqrtf(dx*dx + dy*dy)/50.0f;
-					
+				float angle = sqrtf(dx*dx + dy*dy) / 50.0f;
+
 				//Acumulate rotation with quaternion multiplication
-				q2 = glm::angleAxis(angle, glm::normalize(glm::vec3(dy,dx,0.0f)));
+				q2 = glm::angleAxis(angle, glm::normalize(glm::vec3(dy, dx, 0.0f)));
 				quater = glm::cross(q2, quater);
 
 				lastx = xpos;
 				lasty = ypos;
 			}
-			return false;
 		}
-		return true;
+		return false;
 	}
 
 	int TwEventMouseButtonGLFW3(GLFWwindow* window, int button, int action, int mods)
@@ -129,9 +111,7 @@ namespace glfwFunc
 		double x, y;   
 		glfwGetCursorPos(window, &x, &y);  
 
-		int t1 = TwEventMouseButtonGLFW(button, action);
-		bool t2 = g_pTransferFunc->MouseButton((int)x, (int)y, button, action);
-		if(!t1 && !t2){
+		if (!g_pTransferFunc->MouseButton((int)x, (int)y, button, action)){
 			
 			if(button == GLFW_MOUSE_BUTTON_LEFT){
 				if(action == GLFW_PRESS){
@@ -171,8 +151,6 @@ namespace glfwFunc
 		{
 			m_program.setUniform("mProjection", mProjMatrix);
 		}
-
-		TwWindowSizeGLFW3(window, iWidth, iHeight);
 		
 		m_BackInter->SetResolution(iWidth, iHeight);
 		g_pTransferFunc->Resize(&WINDOW_WIDTH, &WINDOW_HEIGHT);
@@ -234,22 +212,6 @@ namespace glfwFunc
 
 		glfwSwapBuffers(glfwWindow);
 	}
-	
-
-	//Con esta funcion se puede obtener el valor 
-	void TW_CALL SetVarCallback(const void *value, void *clientData)
-	{
-		color[0] = ((const GLfloat *)value)[0]; 
-		color[1] = ((const GLfloat *)value)[1]; 
-		color[2] = ((const GLfloat *)value)[2]; 
-	}
-
-	void TW_CALL GetVarCallback(void *value, void *clientData)
-	{
-		((GLfloat*) value)[0] = color[0];
-		((GLfloat*) value)[1] = color[1];
-		((GLfloat*) value)[2] = color[2];
-	}
 
 
 	///
@@ -280,28 +242,13 @@ namespace glfwFunc
 		g_pTransferFunc = new TransferFunction();   
 		g_pTransferFunc->InitContext(glfwWindow, &WINDOW_WIDTH, &WINDOW_HEIGHT , -1 , -1);
 
-		TwInit(TW_OPENGL_CORE, NULL);
-		TwWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		// send window size events to AntTweakBar
 		glfwSetWindowSizeCallback(glfwWindow, resizeCB);
 		glfwSetMouseButtonCallback(glfwWindow, (GLFWmousebuttonfun)TwEventMouseButtonGLFW3);
 		glfwSetCursorPosCallback(glfwWindow, (GLFWcursorposfun)TwEventMousePosGLFW3);
-		glfwSetScrollCallback(glfwWindow, (GLFWscrollfun)TwEventMouseWheelGLFW3);
 		glfwSetKeyCallback(glfwWindow, (GLFWkeyfun)keyboardCB);
-		glfwSetCharCallback(glfwWindow, (GLFWcharfun)TwEventCharGLFW3);
 
-		TwBar *myBar;
-		myBar = TwNewBar("Opciones");
-	
-		//Definicion de un boton para cambiar un color utilizando callbacks
-		TwAddVarCB(myBar,"Color",TW_TYPE_COLOR3F, SetVarCallback, GetVarCallback, color, "label='Color Triangulo' group=Triangulo");
-
-		//Definicion de un boton para cambiar un color sin utilizar callbacks
-		TwAddVarRW(myBar,"Color2",TW_TYPE_COLOR3F,color, "label='Color Triangulo2' group=Triangulo");
-		TwAddButton(myBar,"Salir", pressExit,NULL,"label='Salir' group=Archivo");
-		TwAddVarRW(myBar, "Dibujar", TW_TYPE_BOOLCPP, &pintar, "label='Dibujar' group=Triangulo");
-		TwAddVarRW(myBar, "ObjRotation", TW_TYPE_QUAT4F, &quater, " label='Object rotation' open help='Change the object orientation.' ");
 
 		//load the shaders
 		try{
