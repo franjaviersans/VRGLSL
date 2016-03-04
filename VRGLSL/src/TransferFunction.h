@@ -89,7 +89,7 @@ public:
 	bool updateTexture, dragDrop, dragDropColor, dragDropPicker, isVisible;		
 
 	void Display();
-	void InitContext( GLFWwindow *window, int *windowsW, int *windowsH, int posx = -1, int posy = -1);
+	void InitContext(GLFWwindow *window, int *windowsW, int *windowsH, const char * file = NULL, int posx = -1, int posy = -1);
 	bool MouseButton( int w, int h, int button, int action );
 	bool CursorPos ( int w, int h );
 	void Resize(int *windowsW, int *windowsH);

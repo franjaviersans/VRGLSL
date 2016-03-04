@@ -1,4 +1,5 @@
 #include "TransferFunction.h"
+#include <fstream>
 #include <iostream>
 
 bool operator<( const specialPoint &point1, const specialPoint &point2 ) 
@@ -38,7 +39,7 @@ TransferFunction::~TransferFunction(void)
 
 
 //Function to init context
-void TransferFunction::InitContext( GLFWwindow *window, int *windowsW, int *windowsH, int posx, int posy)
+void TransferFunction::InitContext(GLFWwindow *window, int *windowsW, int *windowsH, const char * file, int posx, int posy)
 {
 
 	//Load the tetures!!
@@ -92,13 +93,60 @@ void TransferFunction::InitContext( GLFWwindow *window, int *windowsW, int *wind
 
 	Resize(windowsW, windowsH);
 
-	//Set the first points
-	this->MouseButton( MAXW + this->realposx, MINH + this->realposy, GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS );					
-	this->pointSelected = 0;							
-	this->MouseButton( MINWPC + this->realposx, MAXHPC + this->realposy, GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS );					
-	this->MouseButton( MINW + this->realposx, MAXH + this->realposy, GLFW_MOUSE_BUTTON_LEFT,  GLFW_PRESS );						
-	this->MouseButton( MAXW + this->realposx, MINH + this->realposy, GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE );					
-	this->UpdatePallete();
+	bool load = false;
+
+
+	if (file != NULL){
+
+
+		std::ifstream input(file, std::ios::in);
+
+		if (!input.is_open()){
+			std::cout << "Couldn't load file" << std::endl;
+			exit(0);
+		}
+
+		int N;
+		input >> N;
+
+		for (int i = 0; i < N; ++i){
+			float  s, r, g, b, a;
+			input >> s >> r >> g >> b >> a;
+			this->pointList[this->ptsCounter].x = s * (MAXW - MINW) + MINW;
+			this->pointList[this->ptsCounter].y = a * (MAXH - MINH) + MINH;
+			this->colorList[this->ptsCounter] = glm::vec4(r, g, b, a);
+			this->colorPosList[this->ptsCounter] = MINWSC;
+			this->colorPickerPosList[this->ptsCounter] = currentColorPickerPos;
+			++this->ptsCounter;
+		}
+
+		input.close();
+
+		}
+
+	if (!load){
+		//Set the first point
+		this->pointList[this->ptsCounter].x = MINW;
+		this->pointList[this->ptsCounter].y = MAXH;
+		this->colorList[this->ptsCounter] = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+		this->colorPosList[this->ptsCounter] = MINWSC;
+		this->colorPickerPosList[this->ptsCounter] = glm::ivec2(MINWPC + 5, MINHPC + 5);
+		++this->ptsCounter;
+
+		//Set the last point
+		this->pointList[this->ptsCounter].x = MAXW;
+		this->pointList[this->ptsCounter].y = MINH;
+		this->colorList[this->ptsCounter] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		this->colorPosList[this->ptsCounter] = MINWSC;
+		this->colorPickerPosList[this->ptsCounter] = glm::ivec2(MINWPC + 5, MAXHPC - 5);
+		++this->ptsCounter;
+	}
+
+	SortPoints();
+	this->pointSelected = 0;
+	UpdatePallete();
+
+	
 
 	//Initiate the GUI invisible
 	isVisible = false;
