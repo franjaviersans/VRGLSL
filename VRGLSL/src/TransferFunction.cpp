@@ -113,7 +113,6 @@ void TransferFunction::InitContext(GLFWwindow *window, int *windowsW, int *windo
 				input >> s >> r >> g >> b >> a;
 				this->pointList[this->ptsCounter].x = int((s / 255.0f) * (MAXW - MINW) + MINW);
 				this->pointList[this->ptsCounter].y = int((1.0f - a) * (MAXH - MINH) + MINH);
-				std::cout << s << " " << a << " " << this->pointList[this->ptsCounter].x << " " << (MAXW - MINW) << std::endl;
 				this->colorList[this->ptsCounter] = glm::vec4(r, g, b, a);
 				this->colorPosList[this->ptsCounter] = MINWSC;
 				this->colorPickerPosList[this->ptsCounter] = currentColorPickerPos;
