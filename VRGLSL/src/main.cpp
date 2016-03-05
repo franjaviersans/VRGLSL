@@ -304,7 +304,6 @@ int main(int argc, char** argv)
 
 		//Copy volume file path
 		glfwFunc::volume_filepath = new char[strlen(argv[1]) + 1];
-		cout << strlen(glfwFunc::volume_filepath) << endl;
 		strncpy_s(glfwFunc::volume_filepath, strlen(argv[1]) + 1, argv[1], strlen(argv[1]));
 
 		//Volume size
