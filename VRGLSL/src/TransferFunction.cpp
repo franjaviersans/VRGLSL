@@ -102,27 +102,29 @@ void TransferFunction::InitContext(GLFWwindow *window, int *windowsW, int *windo
 		std::ifstream input(file, std::ios::in);
 
 		if (!input.is_open()){
-			std::cout << "Couldn't load file" << std::endl;
-			exit(0);
+			std::cout << "Couldn't load transfer function file: " << file << std::endl;
+		}else{
+
+			int N;
+			input >> N;
+
+			for (int i = 0; i < N; ++i){
+				float  s, r, g, b, a;
+				input >> s >> r >> g >> b >> a;
+				this->pointList[this->ptsCounter].x = int((s / 255.0f) * (MAXW - MINW) + MINW);
+				this->pointList[this->ptsCounter].y = int((1.0f - a) * (MAXH - MINH) + MINH);
+				std::cout << s << " " << a << " " << this->pointList[this->ptsCounter].x << " " << (MAXW - MINW) << std::endl;
+				this->colorList[this->ptsCounter] = glm::vec4(r, g, b, a);
+				this->colorPosList[this->ptsCounter] = MINWSC;
+				this->colorPickerPosList[this->ptsCounter] = currentColorPickerPos;
+				++this->ptsCounter;
+			}
+
+			input.close();
+			load = true;
 		}
 
-		int N;
-		input >> N;
-
-		for (int i = 0; i < N; ++i){
-			float  s, r, g, b, a;
-			input >> s >> r >> g >> b >> a;
-			this->pointList[this->ptsCounter].x = s * (MAXW - MINW) + MINW;
-			this->pointList[this->ptsCounter].y = a * (MAXH - MINH) + MINH;
-			this->colorList[this->ptsCounter] = glm::vec4(r, g, b, a);
-			this->colorPosList[this->ptsCounter] = MINWSC;
-			this->colorPickerPosList[this->ptsCounter] = currentColorPickerPos;
-			++this->ptsCounter;
-		}
-
-		input.close();
-
-		}
+	}
 
 	if (!load){
 		//Set the first point

@@ -11,7 +11,9 @@
 #include <iostream>
 #include "TextureManager.h"
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::string;
 
 /**
 * Default constructor
@@ -41,7 +43,7 @@ void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth)
 	std::ifstream textureFile(filename, std::ios::binary);
 	
 	if(!textureFile.is_open()){
-		cout<<"Couldn't load file"<<endl;
+		cout<<"Couldn't load file volume: "<<filename<<endl;
 		exit(0);
 	}
 

@@ -27,7 +27,7 @@ namespace glfwFunc
 	//Declare the transfer function
 	TransferFunction *g_pTransferFunc;
 
-	char * volume_filepath = "Raw/volume.raw";
+	char * volume_filepath = "./Raw/volume.raw";
 	char * transfer_func_filepath = NULL;
 	glm::ivec3 vol_size = glm::ivec3(256, 256, 256);
 
@@ -244,7 +244,7 @@ namespace glfwFunc
 
 		//Init the transfer function
 		g_pTransferFunc = new TransferFunction();   
-		g_pTransferFunc->InitContext(glfwWindow, &WINDOW_WIDTH, &WINDOW_HEIGHT , -1 , -1);
+		g_pTransferFunc->InitContext(glfwWindow, &WINDOW_WIDTH, &WINDOW_HEIGHT, transfer_func_filepath, - 1, -1);
 
 
 		// send window size events to AntTweakBar
@@ -303,16 +303,19 @@ int main(int argc, char** argv)
 	if (argc == 5 || argc == 6) {
 
 		//Copy volume file path
-		glfwFunc::volume_filepath = new char[strlen(argv[1])];
-		strncpy_s(glfwFunc::volume_filepath, strlen(argv[1]),  argv[1], strlen(argv[1]));
+		glfwFunc::volume_filepath = new char[strlen(argv[1]) + 1];
+		cout << strlen(glfwFunc::volume_filepath) << endl;
+		strncpy_s(glfwFunc::volume_filepath, strlen(argv[1]) + 1, argv[1], strlen(argv[1]));
 
 		//Volume size
 		int width = atoi(argv[2]), height = atoi(argv[3]), depth = atoi(argv[4]);
 		glfwFunc::vol_size = glm::ivec3(width, height, depth);
 
 		//Copy volume transfer function path
-		if(argc == 6)	glfwFunc::transfer_func_filepath = new char[strlen(argv[5])];
-		else strncpy_s(glfwFunc::transfer_func_filepath, strlen(argv[5]), argv[5], strlen(argv[5]));
+		if (argc == 6){
+			glfwFunc::transfer_func_filepath = new char[strlen(argv[5]) + 1];
+			strncpy_s(glfwFunc::transfer_func_filepath, strlen(argv[5]) + 1, argv[5], strlen(argv[5]));
+		}
 
 	} else if (argc > 6) {
 		printf("Too many arguments supplied!!!! \n");
