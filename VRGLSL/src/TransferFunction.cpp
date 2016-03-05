@@ -11,7 +11,7 @@ bool operator<( const specialPoint &point1, const specialPoint &point2 )
 }
 
 //Default constructor
-TransferFunction::TransferFunction(void):imageW( IMAGEWIDHT ), imageH( IMAGEHEIGHT ), ptsCounter( 0 ), lastPicking( 0 ), dragDrop( false ), dragDropColor( false ), dragDropPicker( false ), indicatorSC( 0 ), pointSelected( 1 ), palleteCreated( false ), updateTexture( true )
+TransferFunction::TransferFunction(void) :imageW(IMAGEWIDHT), imageH(IMAGEHEIGHT), ptsCounter(0), lastPicking(0), dragDrop(false), dragDropColor(false), dragDropPicker(false), indicatorSC(0), pointSelected(1), palleteCreated(false), updateTexture(true), dragDropWindow(false)
 {
 	baseColors[ 0 ] = glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
 	baseColors[ 1 ] = glm::vec4( 1.0f, 0.0f, 1.0f, 1.0f );
