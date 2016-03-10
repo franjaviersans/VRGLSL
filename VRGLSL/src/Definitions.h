@@ -1,6 +1,14 @@
 #ifndef Definitions_H
 #define Definitions_H
 
+//decide if the performance time is going to be used
+#define MEASURE_TIME
+#ifdef MEASURE_TIME
+#include <Windows.h>
+#endif
+
+#define NUM_CYCLES 300
+
 #define BUFFER_OFFSET(i) (reinterpret_cast<void*>(i))
 #define WORLD_COORD_LOCATION	0
 #define COLOR_COORD_LOCATION	1
