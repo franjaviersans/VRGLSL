@@ -39,7 +39,7 @@ namespace glfwFunc
 	glm::mat4x4 mProjMatrix, mModelViewMatrix, mMVP;
 
 	//Variables to do rotation
-	glm::quat quater, q2;
+	glm::quat quater = glm::quat(0.8847f,-.201f, 0.398f, -0.1339f), q2; //begin with a diagonal view
 	glm::mat4x4 RotationMat = glm::mat4x4();
 	float angle = 0;
 	float *vector=(float*)malloc(sizeof(float)*3);
@@ -192,7 +192,7 @@ namespace glfwFunc
 		RotationMat = glm::mat4_cast(glm::normalize(quater));
 
 		mModelViewMatrix =  glm::translate(glm::mat4(), glm::vec3(0.0f,0.0f,-2.0f)) * 
-							RotationMat; 
+							RotationMat;  
 
 
 		mMVP = mProjMatrix * mModelViewMatrix;
