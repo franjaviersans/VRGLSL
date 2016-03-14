@@ -244,7 +244,7 @@ void TextureManager::CreateTexture3D( const unsigned int texID, GLuint width, GL
 	glBindTexture(GL_TEXTURE_3D, gl_texID);
 	//store the texture data for OpenGL use
 
-	glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, width, Height, Depth, 0, pixelFormat, GL_UNSIGNED_BYTE, data);
+	glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, width, Height, Depth, 0, pixelFormat, pixelType, data);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);

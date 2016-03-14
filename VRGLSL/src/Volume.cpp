@@ -37,7 +37,7 @@ void Volume::Init()
 	
 }
 
-void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth)
+void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth, GLboolean bits, GLuint offset)
 {
 	//Read texture from file
 	std::ifstream textureFile(filename, std::ios::binary);
@@ -51,26 +51,46 @@ void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth)
 	textureFile.seekg (0, textureFile.end);
 	length = int(textureFile.tellg());
 
-	if (length != width * height * depth){
+	if (length < width * height * depth * ((bits)?sizeof(unsigned char):sizeof(unsigned short))){
 		cout << "Bad volume size or wrong file!" << endl;
 		exit(0);
 	}
 
     textureFile.seekg (0, textureFile.beg);
 
-	char * memtexture = new char[length];
-    textureFile.read(memtexture, length);
+
+	if (bits){
+		int file_offset = width * height * offset;
+		char * memtexture = new char[length - file_offset];
+
+		textureFile.seekg(file_offset); //Skip some slices
+		textureFile.read((char *)memtexture, length - file_offset);
+
+		//Create Texture
+		TextureManager::Inst()->CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, memtexture);
+		delete  [] memtexture;
+	}
+	else{
+		int file_offset = width * height * sizeof(unsigned short) * offset;
+		short * memtexture = new short[(length - file_offset) / sizeof(unsigned short)];
+		
+		textureFile.seekg(file_offset); //Skip some slices
+		textureFile.read((char *)memtexture, length - file_offset);
+
+		//Create Texture
+		TextureManager::Inst()->CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_UNSIGNED_SHORT, GL_LINEAR, GL_LINEAR, memtexture);
+		delete [] memtexture;
+	}
 
 	textureFile.close();
 
 	diagonal = sqrtf(float(width * width + height * height + depth * depth));
 
-	//std::cout<<width<<"  "<<height<<" "<<depth<<" "<<length<<" "<<width* height* depth<<std::endl;
-
-	//for(int i=0; i<length; ++i) memtexture[i] = 255;
-
-	//Create Texture
-	TextureManager::Inst()->CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_FLOAT, GL_LINEAR, GL_LINEAR, memtexture);
+	GLenum err = GL_NO_ERROR;
+	while ((err = glGetError()) != GL_NO_ERROR)
+	{
+		std::cout << "Problem loading volume " << err << std::endl;
+	}
 }
 
 void Volume::Use(GLenum activeTexture)

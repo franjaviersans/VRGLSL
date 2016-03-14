@@ -31,6 +31,9 @@ namespace glfwFunc
 	char * volume_filepath = "./Raw/volume.raw";
 	char * transfer_func_filepath = NULL;
 	glm::ivec3 vol_size = glm::ivec3(256, 256, 256);
+	glm::mat4 scale = glm::mat4();
+	bool bits8 = true;
+	int offset = 0;
 
 	float color[]={1,1,1};
 	bool pintar = false;
@@ -192,7 +195,7 @@ namespace glfwFunc
 		RotationMat = glm::mat4_cast(glm::normalize(quater));
 
 		mModelViewMatrix =  glm::translate(glm::mat4(), glm::vec3(0.0f,0.0f,-2.0f)) * 
-							RotationMat;  
+							RotationMat * scale;
 
 
 		mMVP = mProjMatrix * mModelViewMatrix;
@@ -293,7 +296,7 @@ namespace glfwFunc
 
 		//Create volume
 		volume = new Volume();
-		volume->Load(volume_filepath, vol_size.x, vol_size.y, vol_size.z);
+		volume->Load(volume_filepath, vol_size.x, vol_size.y, vol_size.z, bits8, offset);
 
 		//Set the value of h
 		m_program.use();
@@ -327,9 +330,13 @@ namespace glfwFunc
 
 int main(int argc, char** argv)
 {
+#ifdef MEASURE_TIME
+	cout << "Measuring time" << endl;
+#else
+	cout << "NOT Measuring time" << endl;
+#endif
 
-
-	if (argc == 5 || argc == 6) {
+	if (argc == 10 || argc == 11) {
 
 		//Copy volume file path
 		glfwFunc::volume_filepath = new char[strlen(argv[1]) + 1];
@@ -339,13 +346,23 @@ int main(int argc, char** argv)
 		int width = atoi(argv[2]), height = atoi(argv[3]), depth = atoi(argv[4]);
 		glfwFunc::vol_size = glm::ivec3(width, height, depth);
 
+		//number of bits;
+		int bits = atoi(argv[5]);
+		glfwFunc::bits8 = (bits == 8);
+
+		//scale factor of the volume
+		glfwFunc::scale = glm::scale(glm::mat4(), glm::vec3(atof(argv[6]), atof(argv[7]), atof(argv[8])));
+		
+		//offset
+		glfwFunc::offset = atoi(argv[9]);
+		
 		//Copy volume transfer function path
-		if (argc == 6){
-			glfwFunc::transfer_func_filepath = new char[strlen(argv[5]) + 1];
-			strncpy_s(glfwFunc::transfer_func_filepath, strlen(argv[5]) + 1, argv[5], strlen(argv[5]));
+		if (argc == 11){
+			glfwFunc::transfer_func_filepath = new char[strlen(argv[10]) + 1];
+			strncpy_s(glfwFunc::transfer_func_filepath, strlen(argv[10]) + 1, argv[10], strlen(argv[10]));
 		}
 
-	} else if (argc > 6) {
+	} else if (argc > 11) {
 		printf("Too many arguments supplied!!!! \n");
 	}
 
