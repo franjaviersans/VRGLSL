@@ -96,6 +96,7 @@ public:
 	void UpdatePallete();
 	void Use(GLenum activeTexture);
 	void Debug();
+	void SaveToFile(std::string filename);
 };
 
 #endif

@@ -787,3 +787,22 @@ void TransferFunction::Debug()
 {
 	
 }
+
+/**
+* Function to save to a file the transfer function
+*/
+void TransferFunction::SaveToFile(std::string filename)
+{
+	std::ofstream out(filename, std::ios::out);
+	out << this->ptsCounter << std::endl;
+	for (int point = 0; point < this->ptsCounter; point++)
+	{
+		int s = int((this->pointList[point].x - MINW) / float(MAXW - MINW)  * 255.0f);
+		out << s << " " << 
+				colorList[point].r << " " << 
+				colorList[point].g << " " << 
+				colorList[point].b << " " << 
+				colorList[point].a << std::endl;
+	}
+	out.close();
+}
