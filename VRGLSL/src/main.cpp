@@ -94,6 +94,9 @@ namespace glfwFunc
 				case GLFW_KEY_SPACE:
 					g_pTransferFunc->isVisible = !g_pTransferFunc->isVisible;
 					break;
+				case GLFW_KEY_S:
+					g_pTransferFunc->SaveToFile("TransferFunction.txt");
+					break;
 			}
 		}
 	}
