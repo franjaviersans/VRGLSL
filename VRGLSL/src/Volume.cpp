@@ -66,9 +66,11 @@ void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth, GL
 		textureFile.seekg(file_offset); //Skip some slices
 		textureFile.read((char *)memtexture, length - file_offset);
 
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		//Create Texture
 		TextureManager::Inst()->CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, memtexture);
 		delete  [] memtexture;
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	}
 	else{
 		int file_offset = width * height * sizeof(unsigned short) * offset;
@@ -77,9 +79,11 @@ void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth, GL
 		textureFile.seekg(file_offset); //Skip some slices
 		textureFile.read((char *)memtexture, length - file_offset);
 
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 		//Create Texture
 		TextureManager::Inst()->CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_UNSIGNED_SHORT, GL_LINEAR, GL_LINEAR, memtexture);
 		delete [] memtexture;
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	}
 
 	textureFile.close();
