@@ -736,7 +736,7 @@ void TransferFunction::UpdatePallete()
 	for( int point = 1; point < this->ptsCounter; point++ )
 	{
 		float dist = float(pointList[ point ].x - pointList[ point - 1].x);
-		int stepsNumber = int(dist / stepSizeBox);
+		int stepsNumber = int(dist / stepSizeBox + 0.5f);
 
 		float floatStepSize = stepSizeBox / dist;
 
