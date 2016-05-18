@@ -6,6 +6,7 @@
 #include "FBOCube.h"
 #include "FBOQuad.h"
 #include "Volume.h"
+#include "Timer.h" 
 #include <iostream>
 #include <fstream>
 
@@ -54,10 +55,8 @@ namespace glfwFunc
 #ifdef MEASURE_TIME
 	std::ofstream time_file("Time.txt", std::ios::out);
 	// helper variable
-	LARGE_INTEGER temp;
+	TimerManager timer;
 	int num;
-	LARGE_INTEGER start_time, end_time;
-	double freq, diff_time;
 #endif
 
 
@@ -181,17 +180,6 @@ namespace glfwFunc
 	void draw()
 	{
 
-		GLenum err = GL_NO_ERROR;
-		while((err = glGetError()) != GL_NO_ERROR)
-		{
-		  std::cout<<"INICIO "<< err<<std::endl;
-		}
-
-
-#ifdef MEASURE_TIME
-		QueryPerformanceCounter((LARGE_INTEGER *)&start_time);	//set start time
-#endif
-
 		glClearColor(0.15f, 0.15f, 0.15f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -237,13 +225,6 @@ namespace glfwFunc
 		g_pTransferFunc->Display();
 
 		glfwSwapBuffers(glfwWindow);
-
-
-#ifdef MEASURE_TIME
-		QueryPerformanceCounter((LARGE_INTEGER *)&end_time); //end time
-		diff_time += (float)(((double)end_time.QuadPart - (double)start_time.QuadPart) / freq); // get total time
-		++num;
-#endif
 	}
 
 
@@ -309,8 +290,7 @@ namespace glfwFunc
 
 #ifdef MEASURE_TIME
 		// get the tick frequency from the OS
-		QueryPerformanceFrequency((LARGE_INTEGER *)&temp);
-		freq = ((double)temp.QuadPart) / 1000.0; //convert to the time needed
+		timer.Init();
 		num = 0;
 #endif
 
@@ -391,23 +371,30 @@ int main(int argc, char** argv)
 	while (!glfwWindowShouldClose(glfwFunc::glfwWindow))
 	{
 #else
-	while (!glfwWindowShouldClose(glfwFunc::glfwWindow) && glfwFunc::num <= NUM_CYCLES)
+	glfwFunc::timer.Start();
+	while (glfwFunc::num <= NUM_CYCLES)
 	{
 #endif
 
+#ifndef MEASURE_TIME
 		if(glfwFunc::g_pTransferFunc->updateTexture) // Check if the color palette changed    
 		{
 			glfwFunc::g_pTransferFunc->UpdatePallete();
 			glfwFunc::g_pTransferFunc->updateTexture = false;
-
 		}
+#endif
 		glfwFunc::draw();
+
+#ifndef MEASURE_TIME
 		glfwPollEvents();	//or glfwWaitEvents()
+#else
+		++glfwFunc::num;
+#endif
 	}
 
 #ifdef MEASURE_TIME
-	glfwFunc::diff_time /= glfwFunc::num; // get time per cycle
-	glfwFunc::time_file << glfwFunc::diff_time << endl;
+	glfwFunc::timer.Stop();
+	glfwFunc::time_file << glfwFunc::timer.GetAverageTime(glfwFunc::num) << endl;
 	glfwFunc::time_file.close();
 #endif
 
