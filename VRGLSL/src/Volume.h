@@ -35,7 +35,7 @@ class Volume
 		void Init();
 
 		///
-		void Load(std::string , GLuint , GLuint , GLuint );
+		void Load(std::string , GLuint , GLuint , GLuint, GLboolean, GLuint);
 
 		///
 		void Use(GLenum );

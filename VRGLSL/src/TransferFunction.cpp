@@ -1,4 +1,5 @@
 #include "TransferFunction.h"
+#include <fstream>
 #include <iostream>
 
 bool operator<( const specialPoint &point1, const specialPoint &point2 ) 
@@ -10,7 +11,7 @@ bool operator<( const specialPoint &point1, const specialPoint &point2 )
 }
 
 //Default constructor
-TransferFunction::TransferFunction(void):imageW( IMAGEWIDHT ), imageH( IMAGEHEIGHT ), ptsCounter( 0 ), lastPicking( 0 ), dragDrop( false ), dragDropColor( false ), dragDropPicker( false ), indicatorSC( 0 ), pointSelected( 1 ), palleteCreated( false ), updateTexture( true )
+TransferFunction::TransferFunction(void) :imageW(IMAGEWIDHT), imageH(IMAGEHEIGHT), ptsCounter(0), lastPicking(0), dragDrop(false), dragDropColor(false), dragDropPicker(false), indicatorSC(0), pointSelected(1), palleteCreated(false), updateTexture(true), dragDropWindow(false)
 {
 	baseColors[ 0 ] = glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
 	baseColors[ 1 ] = glm::vec4( 1.0f, 0.0f, 1.0f, 1.0f );
@@ -38,7 +39,7 @@ TransferFunction::~TransferFunction(void)
 
 
 //Function to init context
-void TransferFunction::InitContext( GLFWwindow *window, int *windowsW, int *windowsH, int posx, int posy)
+void TransferFunction::InitContext(GLFWwindow *window, int *windowsW, int *windowsH, const char * file, int posx, int posy)
 {
 
 	//Load the tetures!!
@@ -92,34 +93,74 @@ void TransferFunction::InitContext( GLFWwindow *window, int *windowsW, int *wind
 
 	Resize(windowsW, windowsH);
 
-	//Set the first points
-	this->MouseButton( MAXW + this->realposx, MINH + this->realposy, GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS );					
-	this->pointSelected = 0;							
-	this->MouseButton( MINWPC + this->realposx, MAXHPC + this->realposy, GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS );					
-	this->MouseButton( MINW + this->realposx, MAXH + this->realposy, GLFW_MOUSE_BUTTON_LEFT,  GLFW_PRESS );						
-	this->MouseButton( MAXW + this->realposx, MINH + this->realposy, GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE );					
-	this->UpdatePallete();
+	bool load = false;
+
+
+	if (file != NULL){
+
+
+		std::ifstream input(file, std::ios::in);
+
+		if (!input.is_open()){
+			std::cout << "Couldn't load transfer function file: " << file << std::endl;
+		}else{
+
+			int N;
+			input >> N;
+
+			for (int i = 0; i < N; ++i){
+				float  s, r, g, b, a;
+				input >> s >> r >> g >> b >> a;
+				this->pointList[this->ptsCounter].x = int((s / 255.0f) * (MAXW - MINW) + MINW);
+				this->pointList[this->ptsCounter].y = int((1.0f - a) * (MAXH - MINH) + MINH);
+				this->colorList[this->ptsCounter] = glm::vec4(r, g, b, a);
+				this->colorPosList[this->ptsCounter] = MINWSC;
+				this->colorPickerPosList[this->ptsCounter] = currentColorPickerPos;
+				++this->ptsCounter;
+			}
+
+			input.close();
+			load = true;
+		}
+
+	}
+
+	if (!load){
+		//Set the first point
+		this->pointList[this->ptsCounter].x = MINW;
+		this->pointList[this->ptsCounter].y = MAXH;
+		this->colorList[this->ptsCounter] = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+		this->colorPosList[this->ptsCounter] = MINWSC;
+		this->colorPickerPosList[this->ptsCounter] = glm::ivec2(MINWPC + 5, MINHPC + 5);
+		++this->ptsCounter;
+
+		//Set the last point
+		this->pointList[this->ptsCounter].x = MAXW;
+		this->pointList[this->ptsCounter].y = MINH;
+		this->colorList[this->ptsCounter] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		this->colorPosList[this->ptsCounter] = MINWSC;
+		this->colorPickerPosList[this->ptsCounter] = glm::ivec2(MINWPC + 5, MAXHPC - 5);
+		++this->ptsCounter;
+	}
+
+	SortPoints();
+	this->pointSelected = 0;
+	UpdatePallete();
+
+	
 
 	//Initiate the GUI invisible
 	isVisible = false;
 
 	//Load the shaders
-	m_program.loadShader(std::string("shaders/TransferFunction.vert"), CGLSLProgram::VERTEX);
-	m_program.loadShader(std::string("shaders/TransferFunction.frag"), CGLSLProgram::FRAGMENT);
-	m_program.create_link();
-	m_program.enable();
-		m_program.addAttribute("vVertexCoord");
-		m_program.addAttribute("vTextureCoord");
-		m_program.addUniform("vColor1");
-		m_program.addUniform("vColor2");
-		m_program.addUniform("vColor3");
-		m_program.addUniform("vColor4");
-		m_program.addUniform("tex");
-		m_program.addUniform("Usetexture");
-		m_program.addUniform("Mode");
-		m_program.addUniform("mProjection");
-		m_program.addUniform("mModelView");
-	m_program.disable();
+	try{
+		m_program.compileShader("./shaders/TransferFunction.vert", GLSLShader::VERTEX);
+		m_program.compileShader("./shaders/TransferFunction.frag", GLSLShader::FRAGMENT);
+		m_program.link();
+	}catch (GLSLProgramException & e) {
+		std::cerr << e.what() << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 //Function to rezise the windows
@@ -181,16 +222,16 @@ void TransferFunction::Display()
 				glm::vec3(ww, hh,1.0f));							//Scale
 
 	//Enable the shader
-	m_program.enable();
+	m_program.use();
 	
-	glUniformMatrix4fv(m_program.getLocation("mProjection"), 1, GL_FALSE, glm::value_ptr(mProjMatrix));
-	glUniform1i(m_program.getLocation("tex"), 0);
+	m_program.setUniform("mProjection", mProjMatrix);
+	m_program.setUniform("tex", 0);
 
 	//Draw a Cube
-	glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(color));
-	glUniform1i(m_program.getLocation("Usetexture"), 1);
-	glUniform1i(m_program.getLocation("Mode"), 0);
-	glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+	m_program.setUniform("vColor1", color);
+	m_program.setUniform("Usetexture", 1);
+	m_program.setUniform("Mode", 0);
+	m_program.setUniform("mModelView", mModelViewMatrix);
 	FBOQuad::Instance()->Draw();
 	//>>>>>>>>>>>>>>>END Drawing the image with the control points
 	
@@ -206,14 +247,14 @@ void TransferFunction::Display()
 				glm::vec3(sizeW, sizeH,1.0f));									//Scale
 
 		//Draw a Cube
-			glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(baseColors[i]));
-			glUniform4fv(m_program.getLocation("vColor2"), 1, glm::value_ptr(baseColors[(i+1) % 6]));
-			glUniform4fv(m_program.getLocation("vColor3"), 1, glm::value_ptr(baseColors[(i+1) % 6]));
-			glUniform4fv(m_program.getLocation("vColor4"), 1, glm::value_ptr(baseColors[i]));
-			glUniform1i(m_program.getLocation("Usetexture"), 0);
-			glUniform1i(m_program.getLocation("Mode"), 1);
-			glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
-			FBOQuad::Instance()->Draw();
+		m_program.setUniform("vColor1", baseColors[i]);
+		m_program.setUniform("vColor2", baseColors[(i + 1) % 6]);
+		m_program.setUniform("vColor3", baseColors[(i + 1) % 6]);
+		m_program.setUniform("vColor4", baseColors[i]);
+		m_program.setUniform("Usetexture", 0);
+		m_program.setUniform("Mode", 1);
+		m_program.setUniform("mModelView", mModelViewMatrix);
+		FBOQuad::Instance()->Draw();
 	}
 	//>>>>>>>>>>>>>>>END Draw the color chooser
 
@@ -231,11 +272,11 @@ void TransferFunction::Display()
 				glm::vec3(sizeW, sizeH,1.0f));											//Scale
 
 	//Draw a Quad
-	glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(color));
-	glUniform1i(m_program.getLocation("text"), 0);
-	glUniform1i(m_program.getLocation("Usetexture"), 1);
-	glUniform1i(m_program.getLocation("Mode"), 0);
-	glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+	m_program.setUniform("vColor1", color);
+	m_program.setUniform("text", 0);
+	m_program.setUniform("Usetexture", 1);
+	m_program.setUniform("Mode", 0);
+	m_program.setUniform("mModelView", mModelViewMatrix);
 	FBOQuad::Instance()->Draw();
 	//>>>>>>>>>>>>>>>END Draw the selector
 	
@@ -252,13 +293,13 @@ void TransferFunction::Display()
 				glm::vec3(sizeW, sizeH,1.0f));											//Scale
 
 	//Draw a Quad
-	glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(glm::vec4(0.0f, 0.0f, 0.0f, alpha)));
-	glUniform4fv(m_program.getLocation("vColor2"), 1, glm::value_ptr(glm::vec4(0.0f, 0.0f, 0.0f, alpha)));
-	glUniform4fv(m_program.getLocation("vColor3"), 1, glm::value_ptr(this->currentColor));
-	glUniform4fv(m_program.getLocation("vColor4"), 1, glm::value_ptr(glm::vec4(1.0f, 1.0f, 1.0f, alpha)));
-	glUniform1i(m_program.getLocation("Usetexture"), 0);
-	glUniform1i(m_program.getLocation("Mode"), 1);
-	glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+	m_program.setUniform("vColor1", glm::vec4(0.0f, 0.0f, 0.0f, alpha));
+	m_program.setUniform("vColor2", glm::vec4(0.0f, 0.0f, 0.0f, alpha));
+	m_program.setUniform("vColor3", this->currentColor);
+	m_program.setUniform("vColor4", glm::vec4(1.0f, 1.0f, 1.0f, alpha));
+	m_program.setUniform("Usetexture", 0);
+	m_program.setUniform("Mode", 1);
+	m_program.setUniform("mModelView", mModelViewMatrix);
 	FBOQuad::Instance()->Draw();
 	//>>>>>>>>>>>>>>>END Draw the other image
 
@@ -280,14 +321,15 @@ void TransferFunction::Display()
 				glm::vec3(sizeW*0.5f + iniW, -sizeH*0.5f + SIZEH - iniH,0.0f)),	//Translate by half + to its position
 				glm::vec3(sizeW, sizeH,1.0f));											//Scale
 
-		glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha)));
-		glUniform4fv(m_program.getLocation("vColor2"), 1, glm::value_ptr(glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha)));
-		glUniform4fv(m_program.getLocation("vColor3"), 1, glm::value_ptr(glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha)));
-		glUniform4fv(m_program.getLocation("vColor4"), 1, glm::value_ptr(glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha)));
-		glUniform1i(m_program.getLocation("Usetexture"), 0);
-		if(this->pointList[ point - 1 ].y > this->pointList[ point ].y) glUniform1i(m_program.getLocation("Mode"), 2);
-		else glUniform1i(m_program.getLocation("Mode"), 3);
-		glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+
+		m_program.setUniform("vColor1", glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha));
+		m_program.setUniform("vColor2", glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha));
+		m_program.setUniform("vColor3", glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha));
+		m_program.setUniform("vColor4", glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha));
+		m_program.setUniform("Usetexture", 0);
+		if (this->pointList[point - 1].y > this->pointList[point].y) m_program.setUniform("Mode", 2);
+		else m_program.setUniform("Mode", 3);
+		m_program.setUniform("mModelView", mModelViewMatrix);
 		FBOQuad::Instance()->Draw();
 
 
@@ -301,12 +343,12 @@ void TransferFunction::Display()
 					glm::vec3(sizeW*0.5f + iniW, sizeH*0.5f + SIZEH - MAXH,0.0f)),	//Translate by half + to its position
 					glm::vec3(sizeW, sizeH,1.0f));											//Scale
 		
-			glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha)));
-			glUniform4fv(m_program.getLocation("vColor2"), 1, glm::value_ptr(glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha)));
-			glUniform4fv(m_program.getLocation("vColor3"), 1, glm::value_ptr(glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha)));
-			glUniform4fv(m_program.getLocation("vColor4"), 1, glm::value_ptr(glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha)));
-			glUniform1i(m_program.getLocation("Mode"), 1);
-			glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+			m_program.setUniform("vColor1", glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha));
+			m_program.setUniform("vColor2", glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha));
+			m_program.setUniform("vColor3", glm::vec4(this->colorList[ point ].x, this->colorList[ point ].y, this->colorList[ point ].z, GrsfAlpha));
+			m_program.setUniform("vColor4", glm::vec4(this->colorList[ point - 1 ].x, this->colorList[ point - 1 ].y, this->colorList[ point - 1 ].z, GrsfAlpha));
+			m_program.setUniform("Mode", 1);
+			m_program.setUniform("mModelView", mModelViewMatrix);
 			FBOQuad::Instance()->Draw();
 		}
 
@@ -329,10 +371,10 @@ void TransferFunction::Display()
 					glm::vec3(10.0f, 10.0f,1.0f));											//Scale
 
 		//Draw a Quad
-		glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(color));
-		glUniform1i(m_program.getLocation("Usetexture"), 1);
-		glUniform1i(m_program.getLocation("Mode"), 0);
-		glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+		m_program.setUniform("vColor1", color);
+		m_program.setUniform("Usetexture", 1);
+		m_program.setUniform("Mode", 0);
+		m_program.setUniform("mModelView", mModelViewMatrix);
 		FBOQuad::Instance()->Draw();
 	}
 	//>>>>>>>>>>>>>>>END Draw each point
@@ -347,17 +389,15 @@ void TransferFunction::Display()
 				glm::vec3(10, 10,1.0f));											//Scale
 
 	//Draw a Quad
-	glUniform4fv(m_program.getLocation("vColor1"), 1, glm::value_ptr(color));
-	glUniform1i(m_program.getLocation("Usetexture"), 1);
-	glUniform1i(m_program.getLocation("Mode"), 0);
-	glUniformMatrix4fv(m_program.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(mModelViewMatrix));
+	m_program.setUniform("vColor1", color);
+	m_program.setUniform("Usetexture", 1);
+	m_program.setUniform("Mode", 0);
+	m_program.setUniform("mModelView", mModelViewMatrix);
 	FBOQuad::Instance()->Draw();
 	//>>>>>>>>>>>>>>>END Draw circle selector
 
 	glDisable(GL_BLEND);
 	glEnable( GL_DEPTH_TEST );
-
-	m_program.disable();
 	
 	glViewport(0, 0,  *windowsW, *windowsH);
 }
@@ -696,7 +736,7 @@ void TransferFunction::UpdatePallete()
 	for( int point = 1; point < this->ptsCounter; point++ )
 	{
 		float dist = float(pointList[ point ].x - pointList[ point - 1].x);
-		int stepsNumber = int(dist / stepSizeBox);
+		int stepsNumber = int(dist / stepSizeBox + 0.5f);
 
 		float floatStepSize = stepSizeBox / dist;
 
@@ -746,4 +786,23 @@ void TransferFunction::Use(GLenum activeTexture)
 void TransferFunction::Debug()
 {
 	
+}
+
+/**
+* Function to save to a file the transfer function
+*/
+void TransferFunction::SaveToFile(std::string filename)
+{
+	std::ofstream out(filename, std::ios::out);
+	out << this->ptsCounter << std::endl;
+	for (int point = 0; point < this->ptsCounter; point++)
+	{
+		int s = int((this->pointList[point].x - MINW) / float(MAXW - MINW)  * 255.0f);
+		out << s << " " << 
+				colorList[point].r << " " << 
+				colorList[point].g << " " << 
+				colorList[point].b << " " << 
+				colorList[point].a << std::endl;
+	}
+	out.close();
 }

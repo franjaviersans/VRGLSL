@@ -19,14 +19,20 @@
 CCubeIntersection::CCubeIntersection(GLuint W, GLuint H):m_uiWidth(W), m_uiHeight(H)
 {
 	//load the shaders
-	m_program.loadShader(std::string("shaders/hit.vert"), CGLSLProgram::VERTEX);
-	m_program.loadShader(std::string("shaders/hit.frag"), CGLSLProgram::FRAGMENT);
-	m_program.create_link();
-	m_program.enable();
-		m_program.addAttribute("vVertex");
-		m_program.addAttribute("vColor");
-		m_program.addUniform("mMVP");
-	m_program.disable();
+	try{
+		m_program.compileShader("shaders/hit.vert", GLSLShader::VERTEX);
+		m_program.compileShader("shaders/hit.frag", GLSLShader::FRAGMENT);
+		m_program.link();
+	}
+	catch (GLSLProgramException & e) {
+		std::cerr << e.what() << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	m_program.use();
+	{
+		m_program.bindAttribLocation(WORLD_COORD_LOCATION, "vVertex");
+		m_program.bindAttribLocation(COLOR_COORD_LOCATION, "vColor");
+	}
 
 	m_iFrameBuffer = -1;
 	depthrenderbuffer = -1;
@@ -114,10 +120,11 @@ void CCubeIntersection::Draw(glm::mat4 &m_mMVP)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Draw a Cube
-	m_program.enable();
-		glUniformMatrix4fv(m_program.getLocation("mMVP"), 1, GL_FALSE, glm::value_ptr(m_mMVP));
+	m_program.use();
+	{
+		m_program.setUniform("mMVP", m_mMVP);
 		FBOCube::Instance()->Draw();
-	m_program.disable();
+	}
 
 
 	//Reset culling

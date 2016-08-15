@@ -73,7 +73,7 @@ private:
 	glm::mat4x4 mProjMatrix, mModelViewMatrix;
 
 	//Shaders programs
-	CGLSLProgram m_program;
+	GLSLProgram m_program;
 				
 	bool Picking( int x, int y);
 	void SortPoints( int jumpPoint = -1 );
@@ -89,13 +89,14 @@ public:
 	bool updateTexture, dragDrop, dragDropColor, dragDropPicker, isVisible;		
 
 	void Display();
-	void InitContext( GLFWwindow *window, int *windowsW, int *windowsH, int posx = -1, int posy = -1);
+	void InitContext(GLFWwindow *window, int *windowsW, int *windowsH, const char * file = NULL, int posx = -1, int posy = -1);
 	bool MouseButton( int w, int h, int button, int action );
 	bool CursorPos ( int w, int h );
 	void Resize(int *windowsW, int *windowsH);
 	void UpdatePallete();
 	void Use(GLenum activeTexture);
 	void Debug();
+	void SaveToFile(std::string filename);
 };
 
 #endif
