@@ -3,7 +3,7 @@
 Volume Rendering application using Ray Casting the fragment shader with OpenGL.
 
 ## Project Configuration ##
-- Need GLFW, FreeImage, GLM, and GLEW. 
+- Need GLFW, stb_image, GLM, and GLAD. 
 - Add include folder with all .h files, lib folder with al .lib files and the .dll files in the root folder.
 - Only volume raw file format supported by now.
 

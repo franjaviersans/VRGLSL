@@ -234,22 +234,22 @@ namespace glfwFunc
 	///
 	bool initialize()
 	{
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
-		glFrontFace(GL_CCW);
-		glCullFace(GL_BACK);
-
 		//Init GLEW
-		glewExperimental = GL_TRUE;
-		if(glewInit() != GLEW_OK) 
-		{
-			printf("- glew Init failed :(\n");
-			return false;
+		//load with glad
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+			printf("Something went wrong!\n");
+			exit(-1);
 		}
 		printf("OpenGL version: %s\n", glGetString(GL_VERSION));
 		printf("GLSL version: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 		printf("Vendor: %s\n", glGetString(GL_VENDOR));
 		printf("Renderer: %s\n", glGetString(GL_RENDERER));
+
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+		glFrontFace(GL_CCW);
+		glCullFace(GL_BACK);
 
 
 		//Init the transfer function

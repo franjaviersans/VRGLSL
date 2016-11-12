@@ -23,22 +23,28 @@
 #define TEXTURE_VOLUME			5
 
 
-#pragma comment (lib,"./lib/glfw3.lib")
-#pragma comment (lib,"./lib/glfw3dll.lib")	
-#pragma comment (lib,"./lib/glew32.lib")
 #pragma comment (lib, "opengl32.lib")
-#pragma comment (lib,"./lib/FreeImage.lib")
+#define PROJECT_DIR "./"
+#ifdef WIN64_
+	#if (_DEBUG)
+		#pragma comment (lib,"./lib/x64/glfw3d.lib")
+	#else
+		#pragma comment (lib,"./lib/x64/glfw3.lib")
+	#endif
+#else
+	#if (_DEBUG)
+		#pragma comment (lib,"./lib/x86/glfw3d.lib")
+	#else
+		#pragma comment (lib,"./lib/x86/glfw3.lib")
+	#endif	
+#endif
 
-
-
-#include "../include/GL/glew.h"
-#define GLFW_DLL
+#include "../include/glad/glad.h"
 #include "../include/GLFW/glfw3.h"
 #include "../include/glm/glm.hpp"
 #include "../include/glm/gtc/matrix_transform.hpp"
 #include "../include/glm/gtc/type_ptr.hpp"
 #include "../include/glm/gtx/quaternion.hpp"
-#include "../include/FreeImage/FreeImage.h"
 
 
 

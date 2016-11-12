@@ -20,14 +20,14 @@ FBOQuad::FBOQuad()
 {
 
 	GLfloat Vertex[] = {//Word          Texture
-						-0.5f,-0.5f,	0.0f,0.0f,
-						0.5f,-0.5f,		1.0f,0.0f,
-						0.5f,0.5f,		1.0f,1.0f,
-						-0.5f,0.5f,		0.0f,1.0f
-						}; 
+		-0.5f, -0.5f, 0.0f, 0.0f,
+		0.5f, -0.5f, 1.0f, 0.0f,
+		0.5f, 0.5f, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0.0f, 1.0f
+	};
 
 
-	GLuint Indices[] = {0,1,2,3}; 
+	GLuint Indices[] = { 0, 1, 2, 0, 2, 3 };
 
 
 
@@ -37,30 +37,30 @@ FBOQuad::FBOQuad()
 	// bind buffer for positions and copy data into buffer
 	// GL_ARRAY_BUFFER is the buffer type we use to feed attributes
 	glBindBuffer(GL_ARRAY_BUFFER, m_iVBO);
- 
-		// feed the buffer, and let OpenGL know that we don't plan to
-		// change it (STATIC) and that it will be used for drawing (DRAW)
-		glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(GL_FLOAT), Vertex, GL_STATIC_DRAW);
 
-		//bind buffer for positions and copy data into buffer
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iVBOIndex);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GL_UNSIGNED_INT), Indices, GL_STATIC_DRAW);
+	// feed the buffer, and let OpenGL know that we don't plan to
+	// change it (STATIC) and that it will be used for drawing (DRAW)
+	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(GL_FLOAT), Vertex, GL_STATIC_DRAW);
+
+	//bind buffer for positions and copy data into buffer
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iVBOIndex);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GL_UNSIGNED_INT), Indices, GL_STATIC_DRAW);
 
 
 	//Generate the VAO
 	glGenVertexArrays(1, &m_iVAO);
-    glBindVertexArray(m_iVAO );
+	glBindVertexArray(m_iVAO);
 
-		// bind buffer for positions and copy data into buffer
-		// GL_ARRAY_BUFFER is the buffer type we use to feed attributes
-		glBindBuffer(GL_ARRAY_BUFFER, m_iVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iVBOIndex);
+	// bind buffer for positions and copy data into buffer
+	// GL_ARRAY_BUFFER is the buffer type we use to feed attributes
+	glBindBuffer(GL_ARRAY_BUFFER, m_iVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iVBOIndex);
 
-		glEnableVertexAttribArray(WORLD_COORD_LOCATION);
-		glVertexAttribPointer(WORLD_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*4, BUFFER_OFFSET(0)); //Vertex
-		glEnableVertexAttribArray(TEXTURE_COORD_LOCATION);
-		glVertexAttribPointer(TEXTURE_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT)*4, BUFFER_OFFSET(sizeof(GL_FLOAT)*2)); //Text Coord
-		
+	glEnableVertexAttribArray(WORLD_COORD_LOCATION);
+	glVertexAttribPointer(WORLD_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 4, BUFFER_OFFSET(0)); //Vertex
+	glEnableVertexAttribArray(TEXTURE_COORD_LOCATION);
+	glVertexAttribPointer(TEXTURE_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 4, BUFFER_OFFSET(sizeof(GL_FLOAT) * 2)); //Text Coord
+
 	//Unbind the vertex array	
 	glBindVertexArray(0);
 
@@ -75,12 +75,12 @@ FBOQuad::FBOQuad()
 *
 * @return an instance of this class
 */
-FBOQuad * FBOQuad::Instance() 
+FBOQuad * FBOQuad::Instance()
 {
 	if (!m_quad)   // Only allow one instance of class to be generated.
-		 m_quad = new FBOQuad;
- 
-   return m_quad;
+		m_quad = new FBOQuad;
+
+	return m_quad;
 
 
 }
@@ -103,9 +103,9 @@ void FBOQuad::Draw()
 {
 
 	//Bind Buffers
-	glBindVertexArray(m_iVAO );
+	glBindVertexArray(m_iVAO);
 
-		glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	//Unbid Buffer
 	glBindVertexArray(0);
@@ -119,7 +119,7 @@ void FBOQuad::Draw()
 void FBOQuad::StartUp()
 {
 	//Bind Buffers
-	glBindVertexArray(m_iVAO );
+	glBindVertexArray(m_iVAO);
 }
 
 
@@ -128,7 +128,7 @@ void FBOQuad::StartUp()
 */
 void FBOQuad::OnlyDraw()
 {
-	glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 
