@@ -145,24 +145,24 @@
   <ItemGroup>
     <ClCompile Include="include\glad\glad.c" />
     <ClCompile Include="src\CubeIntersection.cpp" />
-    <ClCompile Include="src\FBOCube.cpp" />
-    <ClCompile Include="src\FBOQuad.cpp" />
     <ClCompile Include="src\GLSLProgram.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\TextureManager.cpp" />
     <ClCompile Include="src\Timer.cpp" />
     <ClCompile Include="src\TransferFunction.cpp" />
+    <ClCompile Include="src\VBOCube.cpp" />
+    <ClCompile Include="src\VBOQuad.cpp" />
     <ClCompile Include="src\Volume.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CubeIntersection.h" />
     <ClInclude Include="src\Definitions.h" />
-    <ClInclude Include="src\FBOCube.h" />
-    <ClInclude Include="src\FBOQuad.h" />
     <ClInclude Include="src\GLSLProgram.h" />
     <ClInclude Include="src\TextureManager.h" />
     <ClInclude Include="src\Timer.h" />
     <ClInclude Include="src\TransferFunction.h" />
+    <ClInclude Include="src\VBOCube.h" />
+    <ClInclude Include="src\VBOQuad.h" />
     <ClInclude Include="src\Volume.h" />
   </ItemGroup>
   <ItemGroup>

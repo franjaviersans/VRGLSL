@@ -5,10 +5,12 @@
 #include "Definitions.h"
 #include "GLSLProgram.h"
 #include "TextureManager.h"
-#include "FBOQuad.h"
+#include "VBOQuad.h"
 #include <algorithm>
 #include <queue>
 #include <string>
+
+using std::string;
 
 #define NULLNUM 0
 #define NUMOFCOLORS 256
@@ -34,69 +36,94 @@
 #define SIZEW 365
 #define SIZEH 455
 
-struct specialPoint
+
+
+struct HSV{
+	float h;
+	float s;
+	float v;
+};
+
+
+struct ControlPoint
 {
-	
-	
-	glm::ivec2 point;
-	glm::ivec2 pickerPos;
-	int selectedColorPos;
+
+public:
+	HSV hsv;
+	glm::vec4 color;
+	int scalar;
+
 	bool drag;
 	bool selected;
-	glm::vec4 color;
 
-	specialPoint(){}
-	specialPoint(const glm::ivec2 &point, const glm::vec4 &color, const glm::ivec2 &pickerPos, 
-					const int &selectedColorPos, const bool &drag, const bool &selected) :
-					point(point), color(color), pickerPos(pickerPos), 
-					selectedColorPos(selectedColorPos), drag(drag), selected(selected){}
+	ControlPoint(){}
 };
 
 class TransferFunction
 {
 private:
-	float alpha;
-	GLFWwindow *window;
-	int *windowsW, *windowsH;							
-	int imageW, imageH, ptsCounter;						
-	int lastPicking, posx , posy, antx, anty, realposx, realposy;
-	int pointSelected, indicatorSC;									
-	bool palleteCreated, dragDropWindow, corner;		
+	int *m_windowsW, *m_windowsH;
+	int m_imageW, m_imageH, m_ptsCounter;
+	int m_lastPicking, m_posx, m_posy, m_antx, m_anty, m_realposx, m_realposy;
+	bool m_palleteCreated, m_dragDropWindow, m_corner;
 
-	int colorPosList[ MAXPOINT ];	
-	glm::vec4 currentColor;	
-	glm::vec4 colorList[ MAXPOINT ];	
-	glm::vec4 baseColors[ 6 ];	
-	glm::ivec2 currentColorPickerPos;					
-	glm::ivec2 pointList[ MAXPOINT ];	
-	glm::ivec2 colorPickerPosList[ MAXPOINT ];
-	glm::mat4x4 mProjMatrix, mModelViewMatrix;
+	ControlPoint m_controlPointVector[MAXPOINT];
+	glm::vec4 m_baseColors[6];
+	int m_pointSelected;
+	glm::vec4 m_currentColor;
+	glm::mat4x4 m_mProjMatrix, m_mModelViewMatrix;
+
+	//position of the selectos on the screen
+	glm::ivec2 m_PosTF, m_PosHue, m_PosSV;
+
 
 	//Shaders programs
 	GLSLProgram m_program;
-				
-	bool Picking( int x, int y);
-	void SortPoints( int jumpPoint = -1 );
+
+	GLuint m_iVAO, m_iVBO, m_iVBOIndex, histogram_size;
+	float m_histogram_scale;
+	GLfloat m_colorPalette[256][4];
+
+	bool  m_dragDrop, m_dragDropColor, m_dragDropPicker, m_updateTexture, m_isVisible, m_isHistogram, m_scalingHistogram;
+
+	bool Picking(int x, int y);
+	//sort the point with the scalar value
+	void SortPoints(int jumpPoint = -1);
+	//update the current color point from screen cursor positions
 	void UpdateColorPoint();
-	bool DeletePoint( int w, int h );
+	bool DeletePoint(int w, int h);
+	//methods to transform between color spaces
+	HSV RGBtoHSV(glm::vec3 colorRGB);
+	glm::vec3 HSVtoRGB(HSV hsv);
+	//method to transform from color to screen coordinates
+	glm::ivec2 ScalarAlphaToScreenPosTF(int scalar, float alpha);
+	glm::ivec2 HSVToScreenPosHue(HSV hsv);
+	glm::ivec2 HSVToScreenPosSV(HSV hsv);
+	//methods to transform from scree coordinates to color and scalar
+	int ScreenPosToScalar();
+	float ScreenPosToAlpha();
+	glm::vec3 ScreenPosToRGB();
+	float ScreenPosToHue();
+	//method to set the current color
+	void setCurrentColor();
 
 public:
 	TransferFunction(void);
 	~TransferFunction(void);
 
-	GLuint pallete, indextemppallete;
-	GLfloat colorPalette[256][4];
-	bool updateTexture, dragDrop, dragDropColor, dragDropPicker, isVisible;		
-
+	bool loadFile(const char * file);
 	void Display();
-	void InitContext(GLFWwindow *window, int *windowsW, int *windowsH, const char * file = NULL, int posx = -1, int posy = -1);
-	bool MouseButton( int w, int h, int button, int action );
-	bool CursorPos ( int w, int h );
+	void InitContext(int *windowsW, int *windowsH, const char * file = NULL, int posx = -1, int posy = -1);
+	bool MouseButton(int w, int h, int button, int action);
+	bool CursorPos(int w, int h);
 	void Resize(int *windowsW, int *windowsH);
 	void UpdatePallete();
 	void Use(GLenum activeTexture);
-	void Debug();
-	void SaveToFile(std::string filename);
+	bool SaveToFile(std::string filename);
+	void SetUpdate(bool value);
+	void SetVisible(bool value);
+	bool NeedUpdate();
+	void SetHistogram(int *histogram, int size);
 };
 
 #endif

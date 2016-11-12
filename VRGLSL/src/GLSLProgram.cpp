@@ -51,12 +51,12 @@ GLSLProgram::~GLSLProgram() {
 	delete[] shaderNames;
 }
 
-void GLSLProgram::compileShader(const char * fileName)
+void GLSLProgram::compileShader(const std::string fileName)
 throw(GLSLProgramException) {
 	int numExts = sizeof(GLSLShaderInfo::extensions) / sizeof(GLSLShaderInfo::shader_file_extension);
 
 	// Check the file name's extension to determine the shader type
-	std::string ext = getExtension(fileName);
+	std::string ext = getExtension(fileName.c_str());
 	GLSLShader::GLSLShaderType type = GLSLShader::VERTEX;
 	bool matchFound = false;
 	for (int i = 0; i < numExts; i++) {
@@ -87,8 +87,8 @@ std::string GLSLProgram::getExtension(const char * name) {
 	return "";
 }
 
-void GLSLProgram::compileShader(const char * fileName,
-	GLSLShader::GLSLShaderType type)
+void GLSLProgram::compileShader(const std::string fileName,
+	GLSLShader::GLSLShaderType type, const std::string header)
 	throw(GLSLProgramException)
 {
 	if (!fileExists(fileName))
@@ -115,12 +115,12 @@ void GLSLProgram::compileShader(const char * fileName,
 	code << inFile.rdbuf();
 	inFile.close();
 
-	compileShader(code.str(), type, fileName);
+	compileShader(header, code.str(), type, fileName);
 }
 
-void GLSLProgram::compileShader(const std::string & source,
+void GLSLProgram::compileShader(const std::string header, const std::string source,
 	GLSLShader::GLSLShaderType type,
-	const char * fileName)
+	const std::string fileName)
 	throw(GLSLProgramException)
 {
 	if (handle <= 0) {
@@ -131,8 +131,8 @@ void GLSLProgram::compileShader(const std::string & source,
 	}
 
 	GLuint shaderHandle = glCreateShader(type);
-
-	const char * c_code = source.c_str();
+	std::string final_code = header + source;
+	const char * c_code = final_code.c_str();
 	glShaderSource(shaderHandle, 1, &c_code, NULL);
 
 	// Compile the shader
@@ -153,13 +153,7 @@ void GLSLProgram::compileShader(const std::string & source,
 			logString = c_log;
 			delete[] c_log;
 		}
-		std::string msg;
-		if (fileName) {
-			msg = std::string(fileName) + ": shader compliation failed\n";
-		}
-		else {
-			msg = "Shader compilation failed.\n";
-		}
+		std::string msg = std::string(fileName) + ": shader compliation failed\n";
 		msg += logString;
 
 		throw GLSLProgramException(msg);

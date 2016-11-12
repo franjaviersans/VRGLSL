@@ -55,10 +55,10 @@ public:
 	GLSLProgram();
 	~GLSLProgram();
 
-	void   compileShader(const char *fileName) throw (GLSLProgramException);
-	void   compileShader(const char * fileName, GLSLShader::GLSLShaderType type) throw (GLSLProgramException);
-	void   compileShader(const std::string & source, GLSLShader::GLSLShaderType type,
-		const char *fileName = NULL) throw (GLSLProgramException);
+	void   compileShader(const std::string fileName) throw (GLSLProgramException);
+	void   compileShader(const std::string fileName, GLSLShader::GLSLShaderType type, const std::string header = "") throw (GLSLProgramException);
+	void   compileShader(const std::string header, const std::string source, GLSLShader::GLSLShaderType type,
+		const std::string fileName) throw (GLSLProgramException);
 
 	void   link() throw (GLSLProgramException);
 	void   validate() throw(GLSLProgramException);

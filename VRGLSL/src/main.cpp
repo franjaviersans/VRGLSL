@@ -3,8 +3,8 @@
 #include "TransferFunction.h"
 #include "TextureManager.h"
 #include "CubeIntersection.h"
-#include "FBOCube.h"
-#include "FBOQuad.h"
+#include "VBOCube.h"
+#include "VBOQuad.h"
 #include "Volume.h"
 #include "Timer.h" 
 #include <iostream>
@@ -91,7 +91,11 @@ namespace glfwFunc
 					glfwSetWindowShouldClose(window, GL_TRUE);
 					break;
 				case GLFW_KEY_SPACE:
-					g_pTransferFunc->isVisible = !g_pTransferFunc->isVisible;
+				{
+					static bool visible = false;
+					visible = !visible;
+					g_pTransferFunc->SetVisible(visible);
+				}
 					break;
 				case GLFW_KEY_S:
 					g_pTransferFunc->SaveToFile("TransferFunction.txt");
@@ -210,7 +214,7 @@ namespace glfwFunc
 
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 			//glPointSize(10);
-			FBOCube::Instance()->Draw();
+			VBOCube::Instance().Draw();
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 			glDisable(GL_BLEND);
@@ -254,7 +258,7 @@ namespace glfwFunc
 
 		//Init the transfer function
 		g_pTransferFunc = new TransferFunction();   
-		g_pTransferFunc->InitContext(glfwWindow, &WINDOW_WIDTH, &WINDOW_HEIGHT, transfer_func_filepath, - 1, -1);
+		g_pTransferFunc->InitContext(&WINDOW_WIDTH, &WINDOW_HEIGHT, transfer_func_filepath, - 1, -1);
 
 
 		// send window size events to AntTweakBar
@@ -305,7 +309,7 @@ namespace glfwFunc
 	{
 		delete m_BackInter;
 		delete g_pTransferFunc;
-		TextureManager::Inst()->UnloadAllTextures();
+		TextureManager::Inst().UnloadAllTextures();
 		glfwTerminate();
 		glfwDestroyWindow(glfwWindow);
 	}
@@ -377,10 +381,10 @@ int main(int argc, char** argv)
 #endif
 
 #ifndef MEASURE_TIME
-		if(glfwFunc::g_pTransferFunc->updateTexture) // Check if the color palette changed    
+		if (glfwFunc::g_pTransferFunc->NeedUpdate()) // Check if the color palette changed    
 		{
 			glfwFunc::g_pTransferFunc->UpdatePallete();
-			glfwFunc::g_pTransferFunc->updateTexture = false;
+			glfwFunc::g_pTransferFunc->SetUpdate(false);
 		}
 #endif
 		glfwFunc::draw();

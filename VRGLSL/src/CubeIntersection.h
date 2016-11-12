@@ -9,7 +9,7 @@
 
 //Includes
 #include "Definitions.h"
-#include "FBOCube.h"
+#include "VBOCube.h"
 #include "GLSLProgram.h"
 
 
@@ -17,29 +17,29 @@ class CCubeIntersection
 {
 	//Functions
 
-	public:
-		///Default constructor
-		CCubeIntersection(GLuint W, GLuint H);
+public:
+	///Default constructor
+	CCubeIntersection(GLuint W, GLuint H);
 
-		///Default destructor
-		~CCubeIntersection();
+	///Default destructor
+	~CCubeIntersection();
 
-		///Set resolution
-		void SetResolution(GLuint ResW, GLuint ResH);
+	///Set resolution
+	void SetResolution(GLuint ResW, GLuint ResH);
 
-		///Method to Draw the Quad
-		void Draw(glm::mat4 &);
+	///Method to Draw the Quad
+	void Draw(glm::mat4 &);
 
-		///Debug Texture
-		void Debug();
+	///Debug Texture
+	void Debug();
 
-		///Use texture
-		void Use(GLenum);
+	///Use texture
+	void Use(GLenum);
 
 	//Variables
-	private:
-		GLuint m_iFrameBuffer, depthrenderbuffer, m_uiWidth, m_uiHeight, txtHit;
-		GLSLProgram m_program;
+private:
+	GLuint m_iFrameBuffer, depthrenderbuffer, m_uiWidth, m_uiHeight, txtHit;
+	GLSLProgram m_program;
 };
 
 

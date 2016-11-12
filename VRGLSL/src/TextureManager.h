@@ -1,6 +1,6 @@
 //**********************************************
 //Singleton Texture Manager class
-//Written by Ben English
+//Originally Written by Ben English
 //benjamin.english@oit.edu
 //
 //For use with OpenGL and the FreeImage library
@@ -11,13 +11,12 @@
 
 
 #include "Definitions.h"
-#include "TextureManager.h"
 #include <map>
 
 class TextureManager
 {
 public:
-	static TextureManager* Inst();
+	static TextureManager &Inst();
 	virtual ~TextureManager();
 
 	//load a texture an make it the current texture
@@ -77,7 +76,6 @@ protected:
 	TextureManager(const TextureManager& tm);
 	TextureManager& operator=(const TextureManager& tm);
 
-	static TextureManager* m_inst;
 	std::map<unsigned int, tex> m_texID;
 };
 

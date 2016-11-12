@@ -68,7 +68,7 @@ void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth, GL
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		//Create Texture
-		TextureManager::Inst()->CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, memtexture);
+		TextureManager::Inst().CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, memtexture);
 		delete  [] memtexture;
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	}
@@ -81,7 +81,7 @@ void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth, GL
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
 		//Create Texture
-		TextureManager::Inst()->CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_UNSIGNED_SHORT, GL_LINEAR, GL_LINEAR, memtexture);
+		TextureManager::Inst().CreateTexture3D(TEXTURE_VOLUME, width, height, depth, GL_RED, GL_RED, GL_UNSIGNED_SHORT, GL_LINEAR, GL_LINEAR, memtexture);
 		delete [] memtexture;
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	}
@@ -100,7 +100,7 @@ void Volume::Load(string filename, GLuint width, GLuint height, GLuint depth, GL
 void Volume::Use(GLenum activeTexture)
 {
 	glActiveTexture(activeTexture);
-	TextureManager::Inst()->BindTexture(TEXTURE_VOLUME);
+	TextureManager::Inst().BindTexture(TEXTURE_VOLUME);
 }
 
 
