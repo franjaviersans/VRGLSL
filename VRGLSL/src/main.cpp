@@ -29,6 +29,8 @@ namespace glfwFunc
 	//Declare the transfer function
 	TransferFunction *g_pTransferFunc;
 
+
+	
 	char * volume_filepath = "./Raw/volume.raw";
 	char * transfer_func_filepath = NULL;
 	glm::ivec3 vol_size = glm::ivec3(256, 256, 256);
@@ -191,7 +193,7 @@ namespace glfwFunc
 
 		mModelViewMatrix =  glm::translate(glm::mat4(), glm::vec3(0.0f,0.0f,-2.0f)) * 
 							RotationMat * scale;
-
+		mat4 aux = RotationMat * scale;
 
 		mMVP = mProjMatrix * mModelViewMatrix;
 
@@ -205,10 +207,19 @@ namespace glfwFunc
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-
 			m_BackInter->Use(GL_TEXTURE1);
 			g_pTransferFunc->Use(GL_TEXTURE2);
 			volume->Use(GL_TEXTURE3);
+
+
+			//send lightihng information to the kernel
+#ifdef LIGHTING
+			m_program.setUniform("light", 1);
+			vec3 lightDir = vec3(inverse(mModelViewMatrix) * vec4(0.0, 0.0, -1.0f,0.0f));
+			lightDir = normalize(lightDir);
+			m_program.setUniform("lightDir", vec3(lightDir));
+			m_program.setUniform("voxelJump", volume->getVoxelSize());
+#endif
 
 			m_program.setUniform("mModelView", mModelViewMatrix);
 

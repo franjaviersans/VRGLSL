@@ -1,8 +1,9 @@
 #ifndef Definitions_H
 #define Definitions_H
 
+//decide if the volume is lit
+//#dfine LIGHTING
 //decide if the performance time is going to be used
-#define LIGHTING
 //#define MEASURE_TIME
 #ifdef MEASURE_TIME
 #include <Windows.h>

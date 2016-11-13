@@ -23,6 +23,7 @@ class Volume
 	public:
 
 		float diagonal;
+		glm::vec3 voxelSize;
 		
 
 		///Default constructor
@@ -39,6 +40,9 @@ class Volume
 
 		///
 		void Use(GLenum );
+
+		///
+		glm::vec3 getVoxelSize();
 
 
 	//Variables
