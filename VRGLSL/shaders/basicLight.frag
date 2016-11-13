@@ -4,6 +4,10 @@ layout(binding = 2) uniform sampler1D transferFunction;
 layout(binding = 3) uniform sampler3D volume;
 uniform float h = 0.01f;
 
+uniform vec3 lightDir = vec3(0.0f,0.0f,-1.0f); //light direction in eye space
+uniform vec3 diffColor = vec3(1.0f,0.0f,1.0f); //diffuse color of the light
+uniform vec3 voxelJump = vec3(0.01f, 0.01f, 0.01f); //distance between voxels
+
 //in vec3 vTextureCoord;
 in vec3 first;
 
@@ -42,6 +46,26 @@ void main(void)
 
 		//Acumulating color and alpha using under operator 
 		samp.rgb = samp.rgb * samp.a;
+
+
+		//calculate lighting for the sample color
+		// sample neightbours
+		vec3 normal;
+		//sample right
+		vec3 displacement = vec3(voxelJump.x,0.0f,0.0f);
+		normal.x = texture(volume, trans + displacement).x - scalar;
+		displacement = vec3(0.0f,voxelJump.y,0.0f);
+		normal.y = texture(volume, trans + displacement).x - scalar;
+		displacement = vec3(0.0f,0.0f,-voxelJump.z);	//invert z coordinate
+		normal.z =  texture(volume, trans + displacement).x - scalar;
+
+		//normalize normal
+		normal = normalize(normal);
+
+		float d = max(dot(lightDir, normal), 0.0f);
+
+		samp.xyz = samp.xyz * d * diffColor;
+		
 
 		color.rgb += samp.rgb * color.a;
 		color.a *= 1.0f - samp.w;

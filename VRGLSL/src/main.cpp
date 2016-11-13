@@ -214,7 +214,6 @@ namespace glfwFunc
 
 			//send lightihng information to the kernel
 #ifdef LIGHTING
-			m_program.setUniform("light", 1);
 			vec3 lightDir = vec3(inverse(mModelViewMatrix) * vec4(0.0, 0.0, -1.0f,0.0f));
 			lightDir = normalize(lightDir);
 			m_program.setUniform("lightDir", vec3(lightDir));
@@ -282,7 +281,11 @@ namespace glfwFunc
 		//load the shaders
 		try{
 			m_program.compileShader("shaders/basic.vert", GLSLShader::VERTEX);
+#ifdef LIGHTING
+			m_program.compileShader("shaders/basicLight.frag", GLSLShader::FRAGMENT);
+#else
 			m_program.compileShader("shaders/basic.frag", GLSLShader::FRAGMENT);
+#endif
 			m_program.link();
 		}
 		catch (GLSLProgramException & e) {
@@ -332,6 +335,12 @@ int main(int argc, char** argv)
 	cout << "Measuring time" << endl;
 #else
 	cout << "NOT Measuring time" << endl;
+#endif
+
+#ifdef LIGHTING
+	cout << "Using lighting" << endl;
+#else
+	cout << "Without lighting" << endl;
 #endif
 
 	if (argc == 10 || argc == 11) {

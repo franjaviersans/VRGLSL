@@ -168,6 +168,7 @@
   <ItemGroup>
     <None Include="shaders\basic.frag" />
     <None Include="shaders\basic.vert" />
+    <None Include="shaders\basicLight.frag" />
     <None Include="shaders\hit.frag" />
     <None Include="shaders\hit.vert" />
     <None Include="shaders\TransferFunction.frag" />

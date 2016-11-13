@@ -2,7 +2,7 @@
 #define Definitions_H
 
 //decide if the volume is lit
-//#dfine LIGHTING
+//#define LIGHTING
 //decide if the performance time is going to be used
 //#define MEASURE_TIME
 #ifdef MEASURE_TIME
